@@ -3,6 +3,7 @@
 import os
 import shutil
 import jinja2
+import markdown
 
 try:
     EXTS, DIRS = [l.strip().split(' ') for l in open('mend.conf').readlines()]
@@ -18,12 +19,18 @@ base_tmpl = jinja2.Template(open('base.html').read())
 
 os.mkdir('deploy')
 
+md = markdown.Markdown()
+
 for page_name in os.listdir('.'):
     if page_name.split('.')[-1] not in EXTS or page_name == 'base.html':
         continue
 
     title = page_name.split('.')[0].replace('_', ' ').title()
     body = open(page_name).read()
+
+    if page_name.endswith('.md'):
+        body = md.convert(body)
+        page_name = page_name.replace('.md', '.html')
 
     rendered_file = open(os.path.join('deploy', page_name), 'w')
     rendered_file.write(base_tmpl.render(locals()))
